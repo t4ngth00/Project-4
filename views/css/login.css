@@ -39,7 +39,7 @@ input, button {
 .cont {
   position: relative;
   height: 100%;
-  background-image: url("https://lh6.googleusercontent.com/Iqv9zv3Zgun2YbVRH3o-s-PDAnZ4ntd6vyZcivhh9tk8wigT_EKJhKXZxtu451zkcdWLBpr2DwpEewc=w1920-h918-rw");
+  background-image: url("https://lh4.googleusercontent.com/9pSTf86lqLE0pIuP0gRtypKL1L5QMo6mrC9ZbaDjCSiMUdOP-6H66y-qnt2Fty0yquEl7E5bfIC32XM=w1920-h918-rw");
   background-size: cover;
   overflow: auto;
   font-family: "Open Sans", Helvetica, Arial, sans-serif;
@@ -206,12 +206,13 @@ form .error{
           animation: none;
 }
 .login__signup {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #ABA8AE;
 }
 .login__signup a {
   color: #fff;
   cursor: pointer;
+  font-size: 1.5rem;
 }
 
 .app {
