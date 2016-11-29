@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>FreeToCall</title>
+  	<!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  	<!--Import materialize.css-->
+  	<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.js"></script>
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!--Import peerjs -->
+    <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
+  	<!-- Import custom css and js -->
+  	<link href="css/style.css" rel="stylesheet">
+    <script>
+      $(function(){
+        // some global var.
+        var peer_id, conn;
+        var your_id = '<%=user.local.email %>'; console.log(your_id);
+
+        // peer server configuration
+        var peer = new Peer( your_id, {
+            key: '78flukfdfbcvj9k9',
+            debug: 3,
+            config: {'iceServers': [
+            { url: 'stun:stun1.l.google.com:19302' },
+            { url: 'turn:numb.viagenie.ca',
+              credential: 'muazkh', username: 'webrtc@live.com' }
+            ]}
+          });
+
+        // generate the id of current user
+        peer.on('open', function(){
+          $('#id').text(peer.id);
+          console.log(peer.socket.disconnected);
+        });
+
+        // get video configuration
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        function getVideo(callback){
+          navigator.getUserMedia({audio: true, video: true}, callback, function(error){
+            console.log(error);
+            alert('An error occured when taking video and audio. Please try again');
+          });
+        }
+        // get video of current user
+        getVideo(function(stream){
+          window.localStream = stream;
+          onReceiveStream(stream, 'my-camera');
+        });
+
+        function onReceiveStream(stream, element_id){
+          var video = $('#' + element_id + ' video')[0];
+
+          video.src = window.URL.createObjectURL(stream);
+          window.peer_stream = stream;
+        }
+
+      // ***End get video stream, now implement call function***
+
+        $('#call').click(function(){
+          peer_id = $('#peer_id').val();
+            if(peer_id){
+              conn = peer.connect(peer_id, {metadata: {'username': your_id} });
+            }
+          // Call a friend, providing our mediaStream
+            var call = peer.call(peer_id, window.localStream);
+            call.on('stream', function(stream){
+
+              $('#calling_peer_id').text(peer_id);
+              $('#callingUI').modal('open');
+              window.peer_stream = stream;
+              onReceiveStream(stream, 'peer-camera');
+
+              $('#call').addClass('hide');
+              $('#endcall').removeClass('hide');
+              $('#set-name').removeClass('hide');
+              $('#peer-camera').removeClass('hide');
+            });
+        });
+      // start the connection for both
+        peer.on('connection', function(connection){
+          conn = connection;
+          peer_id = connection.peer;
+
+          $('#peer_id').addClass('hide').val(peer_id);
+          $('#connected_peer_container').removeClass('hide');
+          $('#friend-input-field').addClass('hide');
+
+          // data for imcoming call
+          $('#connected_peer').text(connection.metadata.username);
+          $('#connected_peer_answering').text(connection.metadata.username);
+
+          $('#call').addClass('hide');
+          $('#endcall').removeClass('hide');
+          $('#set-name').removeClass('hide');
+          $('#peer-camera').removeClass('hide');
+
+        });
+      // answer the incoming call
+        peer.on('call', function(call){
+            onReceiveCall(call);
+        });
+
+      // run received function
+        function onReceiveCall(call){
+          call.answer(window.localStream);
+          call.on('stream', function(stream){
+            $('#answeringUI').modal('open');
+            window.peer_stream = stream;
+            onReceiveStream(stream, 'peer-camera');
+          });
+        }
+
+      //now implement endCall function. close the peer connection
+        $("#endcall").click(function(call){
+           peer.destroy();
+           peer = null;
+           window.location.reload();
+        })
+
+        peer.on('close', function() {
+          console.log(peer.socket.disconnected);
+        });
+
+      // modal configuration
+        $('.modal').modal({
+            dismissible: true, // Modal can be dismissed by clicking outside of the modal
+            opacity: .8, // Opacity of modal background
+            in_duration: 300, // Transition in duration
+            out_duration: 200, // Transition out duration
+            starting_top: '20%', // Starting top style attribute
+            ending_top: '30%'
+          }
+        );
+      });
+    </script>
+  </head>
+  <body>
+      <!-- calling UI -->
+      <div id="callingUI" class="modal blue-grey darken-4">
+        <div class="modal-content">
+          <h3 class="center-align white-text">Your connection to </br><span class="green-text" id="calling_peer_id"></span> is ready</h3>
+          <h3 class="center-align white-text">You can talk now :)</h3>
+        </div>
+        <div class="progress grey lighten-3">
+          <div class="indeterminate light-green"></div>
+        </div>
+        <div class="modal-footer blue-grey darken-3">
+          <a href="#" class="modal-action modal-close waves-effect btn light-green">Close</a>
+        </div>
+      </div>
+
+      <!-- Accept, decline call UI -->
+      <div id="answeringUI" class="modal blue-grey darken-4">
+        <div class="modal-content">
+          <h3 class="center-align white-text">Incoming call from</br><span class="green-text" id="connected_peer_answering"></span></h3>
+        </div>
+        <div class="progress grey lighten-3">
+          <div class="indeterminate light-green"></div>
+        </div>
+        <div class="modal-footer blue-grey darken-3">
+          <a href="#" id="accept" class="modal-action modal-close waves-effect btn light-green">Close</a>
+        </div>
+      </div>
+
+      <!-- navigation bar -->
+      <ul id="dropdown-user" class="dropdown-content">
+        <li><a href="/profile">Profile</a></li>
+        <li class="divider"></li>
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+      <nav>
+        <div class="nav-wrapper blue-grey darken-3 ">
+          <a href="" class="brand-logo ">FreeToCall</a>
+          <ul class="right hide-on-med-and-down">
+
+            <li><a class="dropdown-button" href="/profile" data-activates="dropdown-user">
+                <i class="material-icons left light-green-text lighten-1">perm_identity</i>
+                <span class="bold light-green-text lighten-1 "> <%=user.local.email %> </span></a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <div class="row">
+        <!-- Display the video of the remote peer -->
+        <div class="col s5">
+            <div class="card white-text">
+              <div class="hide" id="peer-camera">
+                <video class="responsive-video" controls autoplay></video>
+              </div>
+            </div>
+        </div>
+        <!-- Display something -->
+        <div class="col s4">
+          <div class="card blue-grey darken-3">
+            <div class="card-content light-green-text">
+                <h4 class="center-align "><b>Notice!</b></h4>
+                <h5 class="white-text center-align">Please click "allow" to load unsafe scripts after login to our application
+                </h5>
+            </div>
+          </div>
+        </div>
+        <!-- Display main part of the application -->
+        <div class="col s3">
+          <div class="card blue-grey darken-3">
+            <div class="card-content white-text">
+                  <h5  class="light-green-text lighten-1"><a class="white-text">Your username: </a><b><span id="id"></span></b></h5>
+
+                  <div class="input-field" id="friend-input-field">
+                    <input id="peer_id" type="text" class="validate">
+                    <label for="last_name">Friend's Name</label>
+                  </div>
+                  <div id="connected_peer_container" class="hide">
+                    Connected to :
+                    <span class="light-green-text lighten-1" id="connected_peer"></span>
+                  </div>
+                </br>
+                <div class="card-image">
+                  <a id="call" class="btn-floating btn-large waves-effect waves-light light-green darken-1">
+                    <i class="material-icons">phone</i>
+                  </a>
+                  <a id="endcall" class="btn-floating btn-large waves-effect waves-light red darken-1 hide">
+                    <i class="material-icons">call_end</i>
+                  </a>
+                </div>
+            </div>
+          </div>
+          <!-- Display video of the current user -->
+          <div>
+            <div class="card-content white-text">
+              <div id="my-camera">
+                <video class="responsive-video" controls autoplay></video>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+  </body>
+</html>
