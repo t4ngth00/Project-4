@@ -2,17 +2,18 @@
   "name": "communication-app",
   "version": "1.1.1",
   "dependencies": {
-	"express": "*",
-    "ejs": "*",
-    "mongoose": "*",
-    "passport": "*",
-    "passport-local" : "*",
-    "connect-flash": "*",
-    "bcrypt-nodejs" : "*",
-    "morgan": "*",
+    "bcrypt-nodejs": "*",
     "body-parser": "*",
+    "connect-flash": "*",
     "cookie-parser": "*",
+    "ejs": "*",
+    "express": "*",
+    "express-session": "*",
     "method-override": "*",
-    "express-session": "*"
+    "mongoose": "*",
+    "morgan": "*",
+    "passport": "*",
+    "passport-local": "*",
+    "semantic-ui": "*"
   }
 }

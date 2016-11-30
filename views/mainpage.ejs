@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>Main page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+
+  <!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.css">
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.js"></script> -->
+
+  <!-- Or load semantic libs locally  -->
+
+  <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.css">
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src="semantic/dist/semantic.js"></script>
+
+</head>
+
+<body>
+  <div class="ui grid ">
+    <div class="five wide column">
+      <div class="ui top attached menu">
+        <div class="ui dropdown icon item">
+          <i class="wrench icon"></i>
+          <div class="menu">
+            <div class="item">
+              <i class="dropdown icon"></i>
+              <span class="text">New</span>
+              <div class="menu">
+                <div class="item">Document</div>
+                <div class="item">Image</div>
+              </div>
+            </div>
+            <div class="item">
+              Open...
+            </div>
+            <div class="item">
+              Save...
+            </div>
+            <div class="item">Edit Permissions</div>
+            <div class="divider"></div>
+            <div class="header">
+              Export
+            </div>
+            <div class="item">
+              <a href="/logout" >Log out</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ui top attached tabular menu">
+        <a class="active item" data-tab="first">First</a>
+        <a class="item" data-tab="second">Second</a>
+        <a class="item" data-tab="third">Third</a>
+      </div>
+      <div class="ui bottom attached active tab segment" data-tab="first">
+        First
+      </div>
+      <div class="ui bottom attached tab segment" data-tab="second">
+        Second
+      </div>
+      <div class="ui bottom attached tab segment" data-tab="third">
+        Third
+      </div>
+      <div class="ui very relaxed large list selection">
+        <div class="item">
+          <div class="right floated content">
+            <div class="ui button">Add</div>
+          </div>
+          <img class="ui avatar image" src="">
+          <div class="content">
+            <a class="header">Rachel</a>
+          </div>
+        </div>
+        <div class="item">
+          <img class="ui avatar image" src="">
+          <div class="content">
+            <a class="header">Lindsay</a>
+          </div>
+        </div>
+        <div class="item">
+          <img class="ui avatar image" src="">
+          <div class="content">
+            <a class="header">Matthew</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="eleven wide column">
+      <div class="ui top attached button">Button before grid</div>
+    </div>
+  </div>
+  <script src="js/mainpage.js"></script>
+</body>
+</html>
