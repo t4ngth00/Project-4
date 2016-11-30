@@ -13,7 +13,6 @@
     "mongoose": "*",
     "morgan": "*",
     "passport": "*",
-    "passport-local": "*",
-    "semantic-ui": "*"
+    "passport-local": "*"
   }
 }
