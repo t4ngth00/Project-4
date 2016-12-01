@@ -12,78 +12,72 @@
 </head>
 
 <body>
-  <div class="ui grid ">
-    <div class="five wide column">
-      <div class="ui top attached menu">
-        <div class="ui dropdown icon item">
-          <i class="wrench icon"></i>
-          <div class="menu">
-            <div class="item">
-              <i class="dropdown icon"></i>
-              <span class="text">New</span>
-              <div class="menu">
-                <div class="item">Document</div>
-                <div class="item">Image</div>
-              </div>
-            </div>
-            <div class="item">
-              Open...
-            </div>
-            <div class="item">
-              Save...
-            </div>
-            <div class="item">Edit Permissions</div>
-            <div class="divider"></div>
-            <div class="header">
-              Export
-            </div>
-            <div class="item">
-              <a href="/logout" >Log out</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="ui top attached tabular menu">
-        <a class="active item" data-tab="first">First</a>
-        <a class="item" data-tab="second">Second</a>
-        <a class="item" data-tab="third">Third</a>
-      </div>
-      <div class="ui bottom attached active tab segment" data-tab="first">
-        First
-      </div>
-      <div class="ui bottom attached tab segment" data-tab="second">
-        Second
-      </div>
-      <div class="ui bottom attached tab segment" data-tab="third">
-        Third
-      </div>
-      <div class="ui very relaxed large list selection">
+  <!-- navigation bar -->
+  <div class="ui top attached icon menu">
+    <div class="header item">
+      Our Company
+    </div>
+    <div class="ui dropdown right icon item ">
+      <i class="icon setting large teal "></i>
+      <div class="menu">
         <div class="item">
-          <div class="right floated content">
-            <div class="ui button">Add</div>
-          </div>
-          <img class="ui avatar image" src="">
-          <div class="content">
-            <a class="header">Rachel</a>
-          </div>
+          <a href="/profile" >Profile</a>
         </div>
+        <div class="divider"></div>
         <div class="item">
-          <img class="ui avatar image" src="">
-          <div class="content">
-            <a class="header">Lindsay</a>
-          </div>
-        </div>
-        <div class="item">
-          <img class="ui avatar image" src="">
-          <div class="content">
-            <a class="header">Matthew</a>
-          </div>
+          <a href="/logout" >Log out</a>
         </div>
       </div>
     </div>
+  </div>
+  <!-- grid view -->
+  <div class="ui attached grid ">
 
     <div class="eleven wide column">
-      <div class="ui top attached button">Button before grid</div>
+      <div class="ui top icon menu">
+        <div class="right menu">
+          <a class="item"><i class="icon record large teal "></i></a>
+          <a class="item"><i class="icon call large teal "></i></a>
+        </div>
+
+      </div>
+    </div>
+
+
+    <div class="five wide column">
+      <!-- some part -->
+      <div class="ui teal inverted two top attached item menu large">
+        <a class="item active" data-tab="first">Friend</a>
+        <a class="item " data-tab="second">Global</a>
+      </div>
+      <div class="ui bottom attached tab segment active" data-tab="first">
+        <div class="ui very relaxed large list selection ">
+          <div class="item">
+            <div class="right floated content">
+              <div class="ui button">Add</div>
+            </div>
+            <img class="ui avatar image" src="">
+            <div class="content">
+              <a class="header">Rachel</a>
+            </div>
+          </div>
+          <div class="item">
+            <img class="ui avatar image" src="">
+            <div class="content">
+              <a class="header">Lindsay</a>
+            </div>
+          </div>
+          <div class="item">
+            <img class="ui avatar image" src="">
+            <div class="content">
+              <a class="header">Matthew</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ui bottom attached tab segment" data-tab="second">
+        Global page
+      </div>
     </div>
   </div>
   <script src="js/mainpage.js"></script>
