@@ -4,6 +4,9 @@
   // get all the tools we need
   var express  = require('express');
   var app      = express();
+  var http = require('http').Server(app);
+  var io = require('socket.io')(http);
+
   var port     = process.env.PORT || 3000;
   var mongoose = require('mongoose');
   var passport = require('passport');
@@ -42,6 +45,16 @@
   // routes ======================================================================
   require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
 
+  //generate io connection
+  io.on('connection', function(socket){
+    console.log("user connected");
+    socket.on('disconnect', function(){
+      console.log('user disconnected');
+    });
+  })
+
   // launch ======================================================================
-  app.listen(port);
-  console.log('Video call application is running on port: ' + port);
+  // app.listen(port);
+  http.listen(port, function(){
+    console.log('Video call application is running on port: ' + port);
+  });

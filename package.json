@@ -9,10 +9,12 @@
     "ejs": "*",
     "express": "*",
     "express-session": "*",
+    "express-ws": "^2.0.0",
     "method-override": "*",
     "mongoose": "*",
     "morgan": "*",
     "passport": "*",
-    "passport-local": "*"
+    "passport-local": "*",
+    "socket.io": "^1.7.1"
   }
 }
