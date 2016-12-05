@@ -1,11 +1,9 @@
-  // server.js
-
   // set up ======================================================================
-  // get all the tools we need
   var express  = require('express');
   var app      = express();
   var http = require('http').Server(app);
   var io = require('socket.io')(http);
+  var _ = require('lodash');
 
   var port     = process.env.PORT || 3000;
   var mongoose = require('mongoose');
@@ -44,17 +42,33 @@
 
   // routes ======================================================================
   require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
-
+  var users = [];
   //generate io connection
   io.on('connection', function(socket){
     console.log("user connected");
+
+    socket.on('login', function(userData){
+      users.push({'id': userData.id, 'socket': socket.id});
+      console.log(users);
+    })
+    //sendData, for message, call, whatever
+    socket.on('sendData', function(data){
+      var peer_id = data.peer_id;
+      //should find the user there
+      var peer = _.find(users, {'id' : peer_id });
+      if(!peer){
+        return;
+      }
+      io.to(peer.socket).emit('dataReceived', data);
+    });
+
     socket.on('disconnect', function(){
+      //remove the user from the connection
       console.log('user disconnected');
     });
   })
 
   // launch ======================================================================
-  // app.listen(port);
   http.listen(port, function(){
     console.log('Video call application is running on port: ' + port);
   });

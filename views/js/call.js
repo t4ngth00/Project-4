@@ -17,14 +17,11 @@ DONE AND DONE!!!
 	next run navigator.getUserMedia() to get the video info (audio? video constraint?) -> then run gotStream()
 	to add the stream to the video element
 */
-// var WebSocket = require('ws'),
-// 		ws = new WebSocket('ws://localhost:3000')
-// 		ws.on('open', function(){
-// 			ws.send("hey there");
-// 		});
-// 		ws.on('message', function(message) {
-//     console.log('received: %s', message);
-// });
+var socket = io();
+var id = 123;
+//send through login
+socket.emit('login', {'id': id});
+socket.on('dataReceived', onReceive);
 
 var callDuration;
 var localVideo = document.getElementById('localVideo');
@@ -90,6 +87,7 @@ function call(){
 //callback
 function onCreateOfferSuccess(desc) {
   // console.log(desc.sdp);
+  
   pc1.setLocalDescription(desc);
   pc2.setRemoteDescription(desc);
   //now start createAnswre
