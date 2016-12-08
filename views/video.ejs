@@ -12,12 +12,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.js"></script>
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <!--Import peerjs -->
-    <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
   	<!-- Import custom css and js -->
   	<link href="css/style.css" rel="stylesheet">
-    
+
   </head>
   <body>
       <!-- calling UI -->
@@ -98,7 +95,7 @@
                     Connected to :
                     <span class="light-green-text lighten-1" id="connected_peer"></span>
                   </div>
-                  
+
                 </br>
                 <div class="card-image">
                   <a id="callButton" class="btn-floating btn-large waves-effect waves-light light-green darken-1">
@@ -128,10 +125,10 @@
       var socket = io();
       var myid = '<%=user.id %>';
 
-      console.log(myid);  
+      console.log(myid);
       //send through login
       socket.emit('login', {'id': myid});
-      
+
 
       var callDuration;
       var localVideo = document.getElementById('localVideo');
@@ -180,7 +177,7 @@
               {urls: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"}
           ]
         }
-      
+
         pc1 = new webkitRTCPeerConnection(servers);
         pc1.onicecandidate = e => onIceCandidate(pc1, e);
         pc2 = new webkitRTCPeerConnection(servers);
@@ -193,7 +190,7 @@
         var peer_id = document.getElementById('peer_id').value;
         socket.emit('sendData',{
           'id' : myid,
-          'peer_id' : peer_id,          
+          'peer_id' : peer_id,
           'type' : 'calling'
         });
 
@@ -234,7 +231,7 @@
           console.log('ok');
           $('#answeringUI').modal('open');
           $('#remoteVideo').removeClass('hide');
-          
+
         }
       }
       socket.on('dataReceived', onReceive);
