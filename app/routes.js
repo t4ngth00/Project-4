@@ -12,7 +12,9 @@ module.exports = function(app, passport) {
     });
 
     app.get('/mainpage', function(req, res) {
-        res.render('mainpage.ejs');
+        res.render('mainpage.ejs',{
+            user : req.user
+        });
     });
 
     // VIDEO CALL SECTION =========================

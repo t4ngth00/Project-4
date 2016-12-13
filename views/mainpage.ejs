@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html >
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Main page</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
-
+  <!-- semantic UI -->
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.css">
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.js"></script>
 
 </head>
 
-<body>
+<body >
   <!-- navigation bar -->
   <div class="ui top attached icon menu">
     <div class="header item">
@@ -39,18 +39,17 @@
           <a class="item"><i class="icon record large teal "></i></a>
           <a class="item"><i class="icon call large teal "></i></a>
         </div>
-
       </div>
     </div>
-
 
     <div class="five wide column">
       <!-- some part -->
       <div class="ui teal inverted two top attached item menu large">
-        <a class="item active" data-tab="first">Friend</a>
-        <a class="item " data-tab="second">Global</a>
+        <a class="item " data-tab="first">Friend</a>
+        <a class="item active" data-tab="second">Online User</a>
       </div>
-      <div class="ui bottom attached tab segment active" data-tab="first">
+
+      <div class="ui bottom attached tab segment " data-tab="first">
         <div class="ui very relaxed large list selection ">
           <div class="item">
             <div class="right floated content">
@@ -61,25 +60,59 @@
               <a class="header">Rachel</a>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="ui bottom attached tab segment active" data-tab="second">
+        <div class="ui very relaxed large list selection" id = "OnlineUsers">
           <div class="item">
-            <img class="ui avatar image" src="">
-            <div class="content">
-              <a class="header">Lindsay</a>
+            <div class="right floated content">
+              <div class="ui button">Add</div>
             </div>
-          </div>
-          <div class="item">
             <img class="ui avatar image" src="">
             <div class="content">
-              <a class="header">Matthew</a>
+              <a class="header">a</a>
             </div>
           </div>
         </div>
       </div>
-      <div class="ui bottom attached tab segment" data-tab="second">
-        Global page
-      </div>
+
     </div>
   </div>
-  <script src="js/mainpage.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    $('.menu .item').tab();
+    $('.ui.dropdown').dropdown();
+
+    var current_user = '<%=user.local.email %>'; console.log(current_user);
+    var socket = io();
+    setTimeout(function(){ socket.emit('user_send_status_online', current_user);
+    }, 500);
+
+    socket.on('server_send_online_user', function(data){
+      var s =   '<div class="item">' +
+                  '<div class="right floated content">' +
+                    '<div class="ui button">Add</div>' +
+                  '</div>' +
+                  '<img class="ui avatar image" src="">' +
+                  '<div class="content">' +
+                    '<a class="header">' + data + '</a>' +
+                  '</div>' +
+                '</div>'
+      $("#OnlineUsers").append(s);
+    });
+    // var Chatapp = angular.module("Chatapp", []);
+    // Chatapp.controller("ChatCtrl", function ($scope, $rootScope) {
+    //   $scope.hehe = ['nhan'];
+    //   socket.on('server_send_online_user', function(data){
+    //       console.log(data)
+    //       $scope.OnlineUser = data.onlineusers;
+    //       console.log(data.onlineusers);
+    //       $scope.hehe.push(data.onlineusers)
+    //   });
+    //   console.log($scope.hehe)
+    // });
+
+  </script>
 </body>
 </html>
