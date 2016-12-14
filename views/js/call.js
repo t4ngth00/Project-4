@@ -17,6 +17,12 @@ DONE AND DONE!!!
 	next run navigator.getUserMedia() to get the video info (audio? video constraint?) -> then run gotStream()
 	to add the stream to the video element
 */
+var socket = io();
+var id = 123;
+//send through login
+socket.emit('login', {'id': id});
+socket.on('dataReceived', onReceive);
+
 var callDuration;
 var localVideo = document.getElementById('localVideo');
 var remoteVideo = document.getElementById('remoteVideo');
@@ -27,77 +33,72 @@ startButton.onclick = start;
 callButton.disable = true;
 callButton.onclick = call;
 
-var pc1, pc2, localStream;
+var pc1, pc2, localStream, remoteStream;
 var offerOptions = {
 	offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 }
 
-function getOtherPc(pc) {
-  return (pc === pc1) ? pc2 : pc1;
-}
-
 function gotStream(stream){
 	localVideo.srcObject = stream;
-  localStream = stream;
-  callButton.disable = false;
+	localStream = stream;
 }
+function gotRemoteStream(stream){
+	 remoteStream = stream;
+  	video2.srcObject = stream;
+  	trace('Received remote stream');
+  }
 
-function start(){
-	navigator.mediaDevices.getUserMedia({
-		audio: true,
-		video: true
-	}).then(gotStream)
-		.catch(e => alert("Not supported: " + e));
-}
-
+function start() {
+ navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true
+        }).then(gotStream)
+          .catch(e => alert("Not supported: " + e));
+    }
 function call(){
-	callButton.disable = true;
-	var videoTracks = localStream.getVideoTracks();
-	var audioTracks = localStream.getAudioTracks();
-
-//setup the server there
 	var servers = {
-		iceServers: [
-        {urls: "stun:23.21.150.121"},
-        {urls: "stun:stun.l.google.com:19302"},
-        {urls: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"}
-    ]
+          iceServers: [
+              {urls: "stun:23.21.150.121"},
+              {urls: "stun:stun.l.google.com:19302"},
+              {urls: "turn:numb.viagenie.ca", credential: "webrtcdemo", username: "louis%40mozilla.com"}
+          ]
+        } 
+
+        pc1 = new webkitRTCPeerConnection(servers);
+        pc2 = new webkitRTCPeerConnection(servers);
+
+        pc1.addStream(localStream);
+        pc1.onicecandidate = function(e){
+        	if(e.candidate){
+        		pc2.addIceCandidate(
+        			new RTCPeerIceCandidate(e.candidate); 
+        		)
+        	}
+        }
+}
+pc2.onicecandidate = function(e){
+	if(e.candidate){
+		var peer = new RTCPeerIceCandidate(e.candidate);
+		pc1.addIceCandidate(peer);
 	}
-
-  pc1 = new webkitRTCPeerConnection(servers);
-	pc1.onicecandidate = e => onIceCandidate(pc1, e);
-	pc2 = new webkitRTCPeerConnection(servers);
-	pc2.onicecandidate = e => onIceCandidate(pc2, e);
-
-	//set pc2 stream = remoteStream
-	pc2.addStream = gotRemoteStream;
-	pc1.addStream(localStream);
-
-	pc1.createOffer(offerOptions)
-		.then(onCreateOfferSuccess)
 }
-
-//callback
-function onCreateOfferSuccess(desc) {
-  // console.log(desc.sdp);
-  pc1.setLocalDescription(desc);
-  pc2.setRemoteDescription(desc);
-  //now start createAnswre
-  pc2.createAnswer()
-  	.then(onCreateAnswerSuccess)
-  	.catch(e => alert(e))
-}
-
-function gotRemoteStream(e){
+pc2.onaddstream = function(e){
 	remoteVideo.srcObject = e.stream;
 }
-function onCreateAnswerSuccess(desc) {
-  pc2.setLocalDescription(desc);
-  pc1.setRemoteDescription(desc);
-}
-function onIceCandidate(pc, event){
-	 if(event.candidate){
-	 		getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate))
-	 }
-}
+pc1.createOffer().then(
+	function(desc){
+		console.log(local desc);
+		pc1.setLocalDescrition(desc);
+		pc2.setRemoteDescription(desc);
+
+		pc2.createAnswer().then(
+			function(desc2){
+				console.log('pc2 answering');
+	          	pc2.setLocalDescription(desc2);
+	          	pc1.setRemoteDescription(desc2);
+			}
+		)
+	}
+
+)

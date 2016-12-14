@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8">
     <title>FreeToCall</title>
-  	<!--Import Google Icon Font-->
+    <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  	<!--Import materialize.css-->
-  	<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <!--Import materialize.css-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
     <!--Import jQuery before materialize.js-->
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.js"></script>
@@ -14,13 +14,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!--Import peerjs -->
     <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
-  	<!-- Import custom css and js -->
-  	<link href="css/style.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Import custom css and js -->
+    <link href="css/style.css" rel="stylesheet">
     <script>
       $(function(){
         // some global var.
         var peer_id, conn;
         var your_id = '<%=user.local.email %>'; console.log(your_id);
+        var myid = '<%=user.id %>';
+        var socket = io();
 
         // peer server configuration
         var peer = new Peer( your_id, {
@@ -32,13 +35,12 @@
               credential: 'muazkh', username: 'webrtc@live.com' }
             ]}
           });
-
+        socket.emit('login',{'id': your_id});   
         // generate the id of current user
         peer.on('open', function(){
           $('#id').text(peer.id);
           console.log(peer.socket.disconnected);
         });
-
         // get video configuration
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         function getVideo(callback){
@@ -52,16 +54,12 @@
           window.localStream = stream;
           onReceiveStream(stream, 'my-camera');
         });
-
         function onReceiveStream(stream, element_id){
           var video = $('#' + element_id + ' video')[0];
-
           video.src = window.URL.createObjectURL(stream);
           window.peer_stream = stream;
         }
-
       // ***End get video stream, now implement call function***
-
         $('#call').click(function(){
           peer_id = $('#peer_id').val();
             if(peer_id){
@@ -70,63 +68,99 @@
           // Call a friend, providing our mediaStream
             var call = peer.call(peer_id, window.localStream);
             call.on('stream', function(stream){
-
               $('#calling_peer_id').text(peer_id);
               $('#callingUI').modal('open');
-              window.peer_stream = stream;
-              onReceiveStream(stream, 'peer-camera');
-
+              socket.emit('sendData',{
+                'id': your_id,
+                'peer_id': peer_id,
+                'type': 'calling'
+              });
+              
               $('#call').addClass('hide');
               $('#endcall').removeClass('hide');
               $('#set-name').removeClass('hide');
-              $('#peer-camera').removeClass('hide');
+
             });
         });
       // start the connection for both
         peer.on('connection', function(connection){
           conn = connection;
           peer_id = connection.peer;
-
           $('#peer_id').addClass('hide').val(peer_id);
           $('#connected_peer_container').removeClass('hide');
           $('#friend-input-field').addClass('hide');
-
           // data for imcoming call
           $('#connected_peer').text(connection.metadata.username);
           $('#connected_peer_answering').text(connection.metadata.username);
-
-          $('#call').addClass('hide');
+          $('#call').addClass('hide');;
           $('#endcall').removeClass('hide');
           $('#set-name').removeClass('hide');
           $('#peer-camera').removeClass('hide');
-
         });
+          
       // answer the incoming call
         peer.on('call', function(call){
-            onReceiveCall(call);
-        });
-
-      // run received function
-        function onReceiveCall(call){
+          //cannot move call answer to click event ->deo accpet dc call dkm ggff
           call.answer(window.localStream);
           call.on('stream', function(stream){
-            $('#answeringUI').modal('open');
             window.peer_stream = stream;
             onReceiveStream(stream, 'peer-camera');
+            });        
+          $('#accept').click(function(){
+            console.log('accept call');
+            socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'answering'});
+          })
+          $('#decline').click(function(){
+            console.log('decline call');
+            socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'decline'});
+            window.location.reload();
           });
+        });
+      // run received function
+        function onReceiveCall(call){ 
+          call.answer(window.localStream);
+          call.on('stream', function(stream){
+            window.peer_stream = stream;
+            onReceiveStream(stream, 'peer-camera');
+            });        
         }
-
-      //now implement endCall function. close the peer connection
+        
+        //now implement endCall function. close the peer connection
         $("#endcall").click(function(call){
+          socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'end'});
            peer.destroy();
            peer = null;
+           // $('#endcall').addClass('hide');
+           // $('#call').removeClass('hide');
            window.location.reload();
         })
-
         peer.on('close', function() {
           console.log(peer.socket.disconnected);
         });
 
+        function onReceiveMessage(data){
+         switch(data.type){
+          case 'calling':
+          $('#answeringUI').modal('open');
+            console.log('work');
+          break;
+          case 'answering':
+            console.log(peer);
+            $('#call').addClass('hide');
+            $('#endcall').removeClass('hide');
+          break;
+          case 'decline':
+            peer.destroy();
+            peer = null;
+            alert("Declined");
+          case 'end':
+            console.log('gg end');
+            break;
+         }
+        }
+        
+       socket.on('dataReceived', onReceiveMessage);
+      
       // modal configuration
         $('.modal').modal({
             dismissible: true, // Modal can be dismissed by clicking outside of the modal
@@ -164,7 +198,8 @@
           <div class="indeterminate light-green"></div>
         </div>
         <div class="modal-footer blue-grey darken-3">
-          <a href="#" id="accept" class="modal-action modal-close waves-effect btn light-green">Close</a>
+          <a href="#" id="accept" class="modal-action modal-close waves-effect btn light-green">Accept</a>
+          <a href="#" id="decline" class="modal-action modal-close waves-effect btn light-green">Close</a>
         </div>
       </div>
 

@@ -39,3 +39,12 @@ img {
   display:none;
   margin-left: 300px;
 }
+
+video {
+    object-fit: contain;
+}
+
+video.my-video {
+  max-width: 100%;
+  height: auto;
+}
