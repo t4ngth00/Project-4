@@ -13,6 +13,7 @@
     "mongoose": "*",
     "morgan": "*",
     "passport": "*",
-    "passport-local": "*"
+    "passport-local": "*",
+    "socket.io": "^1.7.2"
   }
 }

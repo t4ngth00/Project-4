@@ -37,16 +37,15 @@
   io.on('connection', function(socket){
     console.log('someone connected to the server');
 
-
     socket.on('user_send_status_online', function(data){
 
       if ( OnlineUsers.indexOf(data) >=0 ){
-        console.log(OnlineUsers);
+        io.sockets.emit('server_send_online_user', {'onlineUsers': OnlineUsers} );
       }
       else{
         OnlineUsers.push(data);
         console.log(OnlineUsers);
-        io.sockets.emit('server_send_online_user', data );
+        io.sockets.emit('server_send_online_user', {'onlineUsers': OnlineUsers} );
       }
     });
 
