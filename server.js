@@ -60,11 +60,15 @@
         return;
       }
       io.to(peer.socket).emit('dataReceived', data);
+      console.log(peer.socket);
     });
 
     socket.on('disconnect', function(){
       //remove the user from the connection
       console.log('user disconnected');
+      _.remove(users, function(user){
+      	return user.socket = socket.id;
+      })
     });
   })
 
