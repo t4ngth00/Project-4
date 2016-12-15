@@ -16,10 +16,6 @@
     "morgan": "*",
     "passport": "*",
     "passport-local": "*",
-<<<<<<< HEAD
     "socket.io": "^1.7.2"
-=======
-    "socket.io": "^1.7.1"
->>>>>>> b106823a15c3c414755192f4dfe64d09eb073047
   }
 }

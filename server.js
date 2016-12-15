@@ -1,15 +1,11 @@
   // set up ======================================================================
   var express  = require('express');
   var app      = express();
-<<<<<<< HEAD
-  var server = require('http').createServer(app);
-	var io = require('socket.io').listen(server);
-=======
+
   var http = require('http').Server(app);
   var io = require('socket.io')(http);
   var _ = require('lodash');
 
->>>>>>> b106823a15c3c414755192f4dfe64d09eb073047
   var port     = process.env.PORT || 3000;
   var mongoose = require('mongoose');
   var passport = require('passport');
@@ -22,6 +18,7 @@
 
   var configDB = require('./config/database.js');
   var users = {};
+  var users2 = []; 
 
 
   // configuration ===============================================================
@@ -40,6 +37,22 @@
   var OnlineUsers = [];
   io.on('connection', function(socket){
     console.log('someone connected to the server');
+
+     socket.on('login', function(userData){
+      users2.push({'id': userData.id, 'socket': socket.id});
+      console.log(users2);
+    })
+    //sendData, for message, call, whatever
+    socket.on('sendData', function(data){
+      var peer_id = data.peer_id;
+      //should find the user there
+      var peer = _.find(users2, {'id' : peer_id });
+      if(!peer){
+        return;
+      }
+      io.to(peer.socket).emit('dataReceived', data);
+      console.log(peer.socket);
+    });
 
     socket.on('user_send_status_online', function(data){
 
@@ -115,42 +128,9 @@
 
   // routes ======================================================================
   require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
-  var users = [];
-  //generate io connection
-  io.on('connection', function(socket){
-    console.log("user connected");
 
-    socket.on('login', function(userData){
-      users.push({'id': userData.id, 'socket': socket.id});
-      console.log(users);
-    })
-    //sendData, for message, call, whatever
-    socket.on('sendData', function(data){
-      var peer_id = data.peer_id;
-      //should find the user there
-      var peer = _.find(users, {'id' : peer_id });
-      if(!peer){
-        return;
-      }
-      io.to(peer.socket).emit('dataReceived', data);
-      console.log(peer.socket);
-    });
 
-    socket.on('disconnect', function(){
-      //remove the user from the connection
-      console.log('user disconnected');
-      _.remove(users, function(user){
-      	return user.socket = socket.id;
-      })
-    });
-  })
-
-  // launch ======================================================================
-<<<<<<< HEAD
-  server.listen(port);
-  console.log('Video call application is running on port: ' + port);
-=======
   http.listen(port, function(){
     console.log('Video call application is running on port: ' + port);
   });
->>>>>>> b106823a15c3c414755192f4dfe64d09eb073047
+
