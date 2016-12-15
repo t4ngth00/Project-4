@@ -73,7 +73,7 @@
         <div class="ui very relaxed large list selection" id = "OnlineUsers" ng-repeat="user in OnlineUser">
           <div class="item">
             <div class="right floated content">
-              <div class="ui button" ng-click="callUser(user)">call</div>
+              <div id="call" class="ui button">Call</div>
             </div>
             <img class="ui avatar image" src="">
             <div class="content">
@@ -93,110 +93,162 @@
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
+   
     $('.menu .item').tab();
     $('.ui.dropdown').dropdown();
 
-    var current_user = '<%=user.local.email %>'; console.log(current_user);
+    var your_id = '<%=user.local.email %>'; console.log(your_id);
     var socket = io();
-
-    var peer = new Peer( current_user, {
-        key: '78flukfdfbcvj9k9',
-        debug: 3,
-        config: {'iceServers': [
-        { url: 'stun:stun1.l.google.com:19302' },
-        { url: 'turn:numb.viagenie.ca',
-          credential: 'muazkh', username: 'webrtc@live.com' }
-        ]}
-      });
-
-      // get video configuration
-      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-      function getVideo(callback){
-        navigator.getUserMedia({audio: true, video: true}, callback, function(error){
-          console.log(error);
-          alert('An error occured when taking video and audio. Please try again');
+    var peer_id, conn;
+      $(function(){
+        // peer server configuration
+        var peer = new Peer( your_id, {
+            key: '78flukfdfbcvj9k9',
+            debug: 3,
+            config: {'iceServers': [
+            { url: 'stun:stun1.l.google.com:19302' },
+            { url: 'turn:numb.viagenie.ca',
+              credential: 'muazkh', username: 'webrtc@live.com' }
+            ]}
+          });
+        socket.emit('login',{'id': your_id});   
+        // generate the id of current user
+        peer.on('open', function(){
+          $('#id').text(peer.id);
+          console.log(peer.socket.disconnected);
         });
-      }
+        // get video configuration
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        function getVideo(callback){
+          navigator.getUserMedia({audio: true, video: true}, callback, function(error){
+            console.log(error);
+            alert('An error occured when taking video and audio. Please try again');
+          });
+        }
+        // get video of current user
+        getVideo(function(stream){
+          window.localStream = stream;
+          onReceiveStream(stream, 'my-camera');
+        });
+        function onReceiveStream(stream, element_id){
+          var video = $('#' + element_id + ' video')[0];
+          video.src = window.URL.createObjectURL(stream);
+          window.peer_stream = stream;
+        }
+      // ***End get video stream, now implement call function***
+        $('#call').click(function(){
+          peer_id = $('#peer_id').val();
+            if(peer_id){
+              conn = peer.connect(peer_id, {metadata: {'username': your_id} });
+            }
+          // Call a friend, providing our mediaStream
+            var call = peer.call(peer_id, window.localStream);
+            call.on('stream', function(stream){
+              $('#calling_peer_id').text(peer_id);
+              $('#callingUI').modal('open');
+              socket.emit('sendData',{
+                'id': your_id,
+                'peer_id': peer_id,
+                'type': 'calling'
+              });
+              
+              $('#call').addClass('hide');
+              $('#endcall').removeClass('hide');
+              $('#set-name').removeClass('hide');
 
-      // get video of current user
-      getVideo(function(stream){
-        window.localStream = stream;
-        onReceiveStream(stream, 'my-camera');
-      });
-
-      function onReceiveStream(stream, element_id){
-        var video = $('#' + element_id + ' video')[0];
-
-        video.src = window.URL.createObjectURL(stream);
-        window.peer_stream = stream;
-      }
-
-      $('#call').click(function(){
-        peer_id = $('#peer_id').val();
-          if(peer_id){
-            conn = peer.connect(peer_id, {metadata: {'username': your_id} });
-          }
-        // Call a friend, providing our mediaStream
-          var call = peer.call(peer_id, window.localStream);
+            });
+        });
+      // start the connection for both
+        peer.on('connection', function(connection){
+          conn = connection;
+          peer_id = connection.peer;
+          $('#peer_id').addClass('hide').val(peer_id);
+          $('#connected_peer_container').removeClass('hide');
+          $('#friend-input-field').addClass('hide');
+          // data for imcoming call
+          $('#connected_peer').text(connection.metadata.username);
+          $('#connected_peer_answering').text(connection.metadata.username);
+          $('#call').addClass('hide');;
+          $('#endcall').removeClass('hide');
+          $('#set-name').removeClass('hide');
+          $('#peer-camera').removeClass('hide');
+        });
+          
+      // answer the incoming call
+        peer.on('call', function(call){
+          //cannot move call answer to click event ->deo accpet dc call dkm ggff
+          call.answer(window.localStream);
           call.on('stream', function(stream){
-
-            $('#calling_peer_id').text(peer_id);
-            $('#callingUI').modal('open');
             window.peer_stream = stream;
             onReceiveStream(stream, 'peer-camera');
+            });        
+          $('#accept').click(function(){
+            console.log('accept call');
+            socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'answering'});
+          })
+          $('#decline').click(function(){
+            console.log('decline call');
+            socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'decline'});
+            window.location.reload();
+          });
+        });
+      // run received function
+        function onReceiveCall(call){ 
+          call.answer(window.localStream);
+          call.on('stream', function(stream){
+            window.peer_stream = stream;
+            onReceiveStream(stream, 'peer-camera');
+            });        
+        }
+        
+        //now implement endCall function. close the peer connection
+        $("#endcall").click(function(call){
+          socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'end'});
+           peer.destroy();
+           peer = null;
+           // $('#endcall').addClass('hide');
+           // $('#call').removeClass('hide');
+           window.location.reload();
+        })
+        peer.on('close', function() {
+          console.log(peer.socket.disconnected);
+        });
 
+        function onReceiveMessage(data){
+         switch(data.type){
+          case 'calling':
+          $('#answeringUI').modal('open');
+            console.log('work');
+          break;
+          case 'answering':
+            console.log(peer);
             $('#call').addClass('hide');
             $('#endcall').removeClass('hide');
-            $('#set-name').removeClass('hide');
-            $('#peer-camera').removeClass('hide');
-          });
-      });
-    // start the connection for both
-      peer.on('connection', function(connection){
-        conn = connection;
-        peer_id = connection.peer;
-
-        $('#peer_id').addClass('hide').val(peer_id);
-        $('#connected_peer_container').removeClass('hide');
-        $('#friend-input-field').addClass('hide');
-
-        // data for imcoming call
-        $('#connected_peer').text(connection.metadata.username);
-        $('#connected_peer_answering').text(connection.metadata.username);
-
-        $('#call').addClass('hide');
-        $('#endcall').removeClass('hide');
-        $('#set-name').removeClass('hide');
-        $('#peer-camera').removeClass('hide');
-
-      });
-    // answer the incoming call
-      peer.on('call', function(call){
-          onReceiveCall(call);
-      });
-
-    // run received function
-      function onReceiveCall(call){
-        call.answer(window.localStream);
-        call.on('stream', function(stream){
-          $('#answeringUI').modal('open');
-          window.peer_stream = stream;
-          onReceiveStream(stream, 'peer-camera');
-        });
-      }
-
-    //now implement endCall function. close the peer connection
-      $("#endcall").click(function(call){
-         peer.destroy();
-         peer = null;
-         window.location.reload();
-      })
-
-      peer.on('close', function() {
-        console.log(peer.socket.disconnected);
-      });
-
-    socket.emit('user_send_status_online', current_user);
+          break;
+          case 'decline':
+            peer.destroy();
+            peer = null;
+            alert("Declined");
+          case 'end':
+            console.log('gg end');
+            break;
+         }
+        }
+        
+       socket.on('dataReceived', onReceiveMessage);
+      
+      // modal configuration
+        $('.modal').modal({
+            dismissible: true, // Modal can be dismissed by clicking outside of the modal
+            opacity: .8, // Opacity of modal background
+            in_duration: 300, // Transition in duration
+            out_duration: 200, // Transition out duration
+            starting_top: '20%', // Starting top style attribute
+            ending_top: '30%'
+          }
+        );
+    })
+    socket.emit('user_send_status_online', your_id);
     var Chatapp = angular.module("Chatapp", []);
 
       Chatapp.factory('socket', function ($rootScope) {
@@ -232,7 +284,6 @@
 
 
       });
-
   </script>
 </body>
 </html>
