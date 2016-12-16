@@ -26,8 +26,8 @@
  }
 
 /* hide element */
-.hidden {
-  display: none;
+.hide {
+  display: none !important;
 }
 
 .bold {

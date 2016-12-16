@@ -5,8 +5,6 @@
   <title>Main page</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
   <link href="css/style.css" rel="stylesheet">
-    <!--Import jQuery before materialize.js-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 
   <!-- semantic UI -->
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.css">
@@ -57,7 +55,7 @@
   <div id="answeringUI" class="ui modal">
     <i class="close icon"></i>
     <div class="header">
-      Profile Picture
+      Incoming call
     </div>
     <div class="image content">
       <div class="description">
@@ -243,7 +241,7 @@
           // data for imcoming call
           $('#connected_peer').text(connection.metadata.username);
           $('#connected_peer_answering').text(connection.metadata.username);
-          $('#call').addClass('hide');;
+          $('#call').addClass('hide');
           $('#endcall').removeClass('hide');
           $('#peer-camera').removeClass('hide');
           $('#my-camera').removeClass('hide');
@@ -293,11 +291,12 @@
         function onReceiveMessage(data){
          switch(data.type){
           case 'calling':
-          $('#answeringUI').modal('show');
+            $('#answeringUI').modal('show');
             console.log('work');
           break;
           case 'answering':
             console.log(peer);
+            $('#answeringUI').modal('show');
             $('#call').addClass('hide');
             $('#endcall').removeClass('hide');
           break;
