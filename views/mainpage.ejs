@@ -41,44 +41,33 @@
       </div>
     </div>
   </div>
-  <div id="callingUI" class="ui modal">
-    <i class="close icon"></i>
-    <div class="header">
-      Calling
-    </div>
-    <div class="image content">
-      <div class="description">
-        <div class="ui header">Your connection to <span class="green-text" id="calling_peer_id"></span> is ready</div>
+  <!-- calling UI -->
+      <div id="callingUI" class="modal blue-grey darken-4">
+        <div class="modal-content">
+          <h3 class="center-align white-text">Your connection to </br><span class="green-text" id="calling_peer_id"></span> is ready</h3>
+          <h3 class="center-align white-text">You can talk now :)</h3>
+        </div>
+        <div class="progress grey lighten-3">
+          <div class="indeterminate light-green"></div>
+        </div>
+        <div class="modal-footer blue-grey darken-3">
+          <a href="#" class="modal-action modal-close waves-effect btn light-green">Close</a>
+        </div>
       </div>
-    </div>
-    <div class="actions">
-      <div class="ui positive right labeled icon button">
-        Okay
-        <i class="checkmark icon"></i>
+
+      <!-- Accept, decline call UI -->
+      <div id="answeringUI" class="modal blue-grey darken-4">
+        <div class="modal-content">
+          <h3 class="center-align white-text">Incoming call from</br><span class="green-text" id="connected_peer_answering"></span></h3>
+        </div>
+        <div class="progress grey lighten-3">
+          <div class="indeterminate light-green"></div>
+        </div>
+        <div class="modal-footer blue-grey darken-3">
+          <a href="#" id="accept" class="modal-action modal-close waves-effect btn light-green">Accept</a>
+          <a href="#" id="decline" class="modal-action modal-close waves-effect btn light-green">Close</a>
+        </div>
       </div>
-    </div>
-  </div>
-  <!-- Accept, decline call UI -->
-  <div id="answeringUI" class="ui modal">
-    <i class="close icon"></i>
-    <div class="header">
-      Profile Picture
-    </div>
-    <div class="image content">
-      <div class="description">
-        <div class="ui header">Incoming call from</br><span class="green-text" id="connected_peer_answering"></span></div>
-      </div>
-    </div>
-    <div class="actions">
-      <div id="decline" class="ui black deny button">
-        Decline
-      </div>
-      <div id="accept" class="ui positive right labeled icon button">
-        Accept
-        <i class="checkmark icon"></i>
-      </div>
-    </div>
-  </div>
 
   <!-- grid view -->
   <div class="ui attached grid ">
@@ -121,8 +110,8 @@
           <div class="item">
             <div class="right floated content">
               <div class="ui button card-image" >
-              <a id="call" ng-click="call(user)">
-                 Call
+              <a id="call" ng-click="call(user)" class="btn-floating btn-large waves-effect waves-light light-green darken-1">
+                  <i class="material-icons">call/i>
               </a>
               <a id="endcall" ng-click="endCall()" class="btn-floating btn-large waves-effect waves-light red darken-1 hide">
               <i class="material-icons">End</i>
@@ -231,7 +220,7 @@
             var call = peer.call(peer_id, window.localStream);
             call.on('stream', function(stream){
               $('#calling_peer_id').text(peer_id);
-              $('#callingUI').modal('show');
+              $('#callingUI').modal('open');
               socket.emit('sendData',{
                 'id': your_id,
                 'peer_id': peer_id,
@@ -304,7 +293,7 @@
         function onReceiveMessage(data){
          switch(data.type){
           case 'calling':
-          $('#answeringUI').modal('show');
+          $('#answeringUI').modal('open');
             console.log('work');
           break;
           case 'answering':
