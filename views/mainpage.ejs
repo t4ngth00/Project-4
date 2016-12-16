@@ -4,11 +4,19 @@
   <meta charset="UTF-8">
   <title>Main page</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" rel="stylesheet">
+   <!--Import materialize.css-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.js"></script>
+
   <!-- semantic UI -->
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.js"></script>
   <!-- angular  -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.0-rc.2/angular.js"></script>
   <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
@@ -33,6 +41,45 @@
       </div>
     </div>
   </div>
+  <div id="callingUI" class="ui modal">
+    <i class="close icon"></i>
+    <div class="header">
+      Calling
+    </div>
+    <div class="image content">
+      <div class="description">
+        <div class="ui header">Your connection to <span class="green-text" id="calling_peer_id"></span> is ready</div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui positive right labeled icon button">
+        Okay
+        <i class="checkmark icon"></i>
+      </div>
+    </div>
+  </div>
+  <!-- Accept, decline call UI -->
+  <div id="answeringUI" class="ui modal">
+    <i class="close icon"></i>
+    <div class="header">
+      Profile Picture
+    </div>
+    <div class="image content">
+      <div class="description">
+        <div class="ui header">Incoming call from</br><span class="green-text" id="connected_peer_answering"></span></div>
+      </div>
+    </div>
+    <div class="actions">
+      <div id="decline" class="ui black deny button">
+        Decline
+      </div>
+      <div id="accept" class="ui positive right labeled icon button">
+        Accept
+        <i class="checkmark icon"></i>
+      </div>
+    </div>
+  </div>
+
   <!-- grid view -->
   <div class="ui attached grid ">
 
@@ -74,8 +121,11 @@
           <div class="item">
             <div class="right floated content">
               <div class="ui button card-image" >
-              <a id="call" ng-click="call(user)" class="btn-floating btn-large waves-effect waves-light light-green darken-1">
-                  <i class="material-icons">phone</i>
+              <a id="call" ng-click="call(user)">
+                 Call
+              </a>
+              <a id="endcall" ng-click="endCall()" class="btn-floating btn-large waves-effect waves-light red darken-1 hide">
+              <i class="material-icons">End</i>
               </a>
               </div>
             </div>
@@ -88,7 +138,7 @@
       </div>
 
     <div class="four wide column">
-      <div class="hide" id="my-camera">
+      <div id="my-camera">
         <video class="my-video" controls autoplay></video>
       </div>
     </div>
@@ -181,7 +231,7 @@
             var call = peer.call(peer_id, window.localStream);
             call.on('stream', function(stream){
               $('#calling_peer_id').text(peer_id);
-              $('#callingUI').modal('open');
+              $('#callingUI').modal('show');
               socket.emit('sendData',{
                 'id': your_id,
                 'peer_id': peer_id,
@@ -190,6 +240,7 @@
               
               $('#call').addClass('hide');
               $('#endcall').removeClass('hide');
+              $('#peer-camera').removeClass('hide');
 
             });
         }
@@ -206,6 +257,7 @@
           $('#call').addClass('hide');;
           $('#endcall').removeClass('hide');
           $('#peer-camera').removeClass('hide');
+          $('#my-camera').removeClass('hide');
         });
           
       // answer the incoming call
@@ -236,14 +288,15 @@
         }
         
         //now implement endCall function. close the peer connection
-        $("#endcall").click(function(call){
+       $scope.endCall = function(){
           socket.emit('sendData',{'id': your_id, 'peer_id': peer_id, 'type': 'end'});
            peer.destroy();
            peer = null;
            // $('#endcall').addClass('hide');
            // $('#call').removeClass('hide');
            window.location.reload();
-        })
+       }
+        
         peer.on('close', function() {
           console.log(peer.socket.disconnected);
         });
@@ -251,7 +304,7 @@
         function onReceiveMessage(data){
          switch(data.type){
           case 'calling':
-          $('#answeringUI').modal('open');
+          $('#answeringUI').modal('show');
             console.log('work');
           break;
           case 'answering':
@@ -263,8 +316,14 @@
             peer.destroy();
             peer = null;
             alert("Declined");
+            $('#endcall').addClass('hide');
+            $('#call').removeClass('hide');
+            $('#peer-camera').addClass('hide');
           case 'end':
             console.log('gg end');
+            $('#endcall').addClass('hide');
+            $('#call').removeClass('hide');
+            $('#peer-camera').addClass('hide');
             break;
          }
         }
